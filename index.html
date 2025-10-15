@@ -1,50 +1,49 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <title>Unity Web Player | Teenpati</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    <style>
+        body { margin:0; background:#000; overflow:hidden; }
+        #unity-container { width:100%; height:100%; position:relative; }
+        #unity-canvas { display:block; background:#000; margin:0 auto; }
+        #unity-loading-bar { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:50%; height:20px; background:#555; border-radius:10px; overflow:hidden; }
+        #unity-progress-bar-full { width:0%; height:100%; background:#00ff00; }
+        #unity-warning { position:absolute; top:10px; left:50%; transform:translateX(-50%); color:#fff; z-index:1000; }
+        #unity-fullscreen-button { position:absolute; top:10px; right:10px; z-index:1000; cursor:pointer; padding:10px; background:#222; color:#fff; border-radius:5px; }
+    </style>
 </head>
 <body>
-    <div id="unity-container" class="unity-desktop">
-        <canvas id="unity-canvas" width="960" height="600" tabindex="-1"></canvas>
+    <div id="unity-container">
+        <canvas id="unity-canvas"></canvas>
         <div id="unity-loading-bar">
-            <div id="unity-logo"></div>
-            <div id="unity-progress-bar-empty">
-                <div id="unity-progress-bar-full"></div>
-            </div>
+            <div id="unity-progress-bar-full"></div>
         </div>
         <div id="unity-warning"></div>
-        <div id="unity-footer">
-            <div id="unity-logo-title-footer"></div>
-            <div id="unity-fullscreen-button"></div>
-            <div id="unity-build-title">Teenpati</div>
-        </div>
+        <div id="unity-fullscreen-button">Fullscreen</div>
     </div>
 
     <script>
         var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBar = document.querySelector("#unity-progress-bar-full");
+        var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+        var warningDiv = document.querySelector("#unity-warning");
 
         function unityShowBanner(msg, type) {
-            var warningBanner = document.querySelector("#unity-warning");
-            function updateBannerVisibility() {
-                warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-            }
             var div = document.createElement('div');
-            div.innerHTML = msg;
-            warningBanner.appendChild(div);
-            if (type === 'error') div.style = 'background: red; padding: 10px;';
-            else if (type === 'warning') div.style = 'background: yellow; padding: 10px;';
-            setTimeout(function() {
-                warningBanner.removeChild(div);
-                updateBannerVisibility();
-            }, 5000);
-            updateBannerVisibility();
+            div.innerText = msg;
+            div.style.padding = "10px";
+            div.style.marginTop = "5px";
+            div.style.background = type === 'error' ? 'red' : 'yellow';
+            warningDiv.appendChild(div);
+            setTimeout(() => { warningDiv.removeChild(div); }, 5000);
         }
 
         var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/webglBuild.loader.js"; // Corrected
+        var loaderUrl = buildUrl + "/webglBuild.loader.js"; // Make sure Build folder has correct filenames
         var config = {
             dataUrl: buildUrl + "/webglBuild.data",
             frameworkUrl: buildUrl + "/webglBuild.framework.js",
@@ -56,32 +55,25 @@
             showBanner: unityShowBanner,
         };
 
-        // Detect mobile or desktop
-        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-            var meta = document.createElement('meta');
-            meta.name = 'viewport';
-            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-            document.getElementsByTagName('head')[0].appendChild(meta);
-            document.querySelector("#unity-container").className = "unity-mobile";
-            canvas.className = "unity-mobile";
-        } else {
-            canvas.style.width = "960px";
-            canvas.style.height = "600px";
+        // Resize canvas to fit window
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.style.width = window.innerWidth + "px";
+            canvas.style.height = window.innerHeight + "px";
         }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        document.querySelector("#unity-loading-bar").style.display = "block";
-
-        // Load Unity loader script
+        // Load Unity loader
         var script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
             createUnityInstance(canvas, config, (progress) => {
-                document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+                progressBar.style.width = (progress * 100) + "%";
             }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                    unityInstance.SetFullscreen(1);
-                };
+                loadingBar.style.display = "none";
+                fullscreenButton.onclick = () => { unityInstance.SetFullscreen(1); };
             }).catch((message) => {
                 alert("Unity WebGL error: " + message);
             });
