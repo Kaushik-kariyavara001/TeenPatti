@@ -1,0 +1,9 @@
+*.pnggit[[:space:]]lfs[[:space:]]track[[:space:]] filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+git[[:space:]]lfs[[:space:]]track[[:space:]]*.jpg
+git[[:space:]]lfs[[:space:]]track[[:space:]]*.zip
+ filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+Build/WebGLBuild.wasm filter=lfs diff=lfs merge=lfs -text
+*.wasm filter=lfs diff=lfs merge=lfs -text
