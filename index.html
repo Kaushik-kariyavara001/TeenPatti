@@ -24,31 +24,7 @@
       </div>
     </div>
 
-    <!-- 🔹 Image Upload Function -->
-    <script>
-      function WebGLUploadImage() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = e => {
-          const file = e.target.files[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = function(ev) {
-            // 🔸 Match this name with your Unity GameObject
-            if (window.gameInstance) {
-              window.gameInstance.SendMessage('ImageUploader', 'OnImageSelected', ev.target.result);
-            } else {
-              console.error("❌ Unity instance not found!");
-            }
-          };
-          reader.readAsDataURL(file);
-        };
-        input.click();
-      }
-    </script>
-    <!-- 🔹 End Upload Function -->
-
+  
     <script>
       var canvas = document.querySelector("#unity-canvas");
 
