@@ -1,30 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity Web Player | Teenpati</title>
-    <link rel="shortcut icon" href="TemplateData/favicon.ico">
-    <link rel="stylesheet" href="TemplateData/style.css">
     <style>
-        body { margin:0; background:#000; overflow:hidden; }
-        #unity-container { width:100%; height:100%; position:relative; }
-        #unity-canvas { display:block; background:#000; margin:0 auto; }
-        #unity-loading-bar { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:50%; height:20px; background:#555; border-radius:10px; overflow:hidden; }
+        body { margin:0; background:#231F20; overflow:hidden; }
+        #unity-canvas { display:block; background:#231F20; margin:0 auto; }
+        #unity-loading-bar { position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:50%; height:20px; background:#555; border-radius:10px; overflow:hidden; z-index:1000; }
         #unity-progress-bar-full { width:0%; height:100%; background:#00ff00; }
         #unity-warning { position:absolute; top:10px; left:50%; transform:translateX(-50%); color:#fff; z-index:1000; }
         #unity-fullscreen-button { position:absolute; top:10px; right:10px; z-index:1000; cursor:pointer; padding:10px; background:#222; color:#fff; border-radius:5px; }
     </style>
 </head>
 <body>
-    <div id="unity-container">
-        <canvas id="unity-canvas"></canvas>
-        <div id="unity-loading-bar">
-            <div id="unity-progress-bar-full"></div>
-        </div>
-        <div id="unity-warning"></div>
-        <div id="unity-fullscreen-button">Fullscreen</div>
+    <canvas id="unity-canvas" width=1920 height=1080></canvas>
+    <div id="unity-loading-bar">
+        <div id="unity-progress-bar-full"></div>
     </div>
+    <div id="unity-warning"></div>
+    <div id="unity-fullscreen-button">Fullscreen</div>
 
+    <script src="Build/WebGLBuild.loader.js"></script>
     <script>
         var canvas = document.querySelector("#unity-canvas");
         var loadingBar = document.querySelector("#unity-loading-bar");
@@ -32,6 +29,7 @@
         var fullscreenButton = document.querySelector("#unity-fullscreen-button");
         var warningDiv = document.querySelector("#unity-warning");
 
+        // Show warning or error messages
         function unityShowBanner(msg, type) {
             var div = document.createElement('div');
             div.innerText = msg;
@@ -42,20 +40,7 @@
             setTimeout(() => { warningDiv.removeChild(div); }, 5000);
         }
 
-        var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/webglBuild.loader.js"; // Make sure Build folder has correct filenames
-        var config = {
-            dataUrl: buildUrl + "/webglBuild.data",
-            frameworkUrl: buildUrl + "/webglBuild.framework.js",
-            codeUrl: buildUrl + "/webglBuild.wasm",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "DefaultCompany",
-            productName: "Teenpati",
-            productVersion: "1.0.2",
-            showBanner: unityShowBanner,
-        };
-
-        // Resize canvas to fit window
+        // Responsive canvas
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -65,20 +50,35 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Load Unity loader
-        var script = document.createElement("script");
-        script.src = loaderUrl;
-        script.onload = () => {
-            createUnityInstance(canvas, config, (progress) => {
-                progressBar.style.width = (progress * 100) + "%";
-            }).then((unityInstance) => {
-                loadingBar.style.display = "none";
-                fullscreenButton.onclick = () => { unityInstance.SetFullscreen(1); };
-            }).catch((message) => {
-                alert("Unity WebGL error: " + message);
-            });
-        };
-        document.body.appendChild(script);
+        // Mobile detection
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            var meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+            document.getElementsByTagName('head')[0].appendChild(meta);
+
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            canvas.style.position = "fixed";
+        }
+
+        // Create Unity instance
+        createUnityInstance(canvas, {
+            arguments: [],
+            dataUrl: "Build/WebGLBuild.data",
+            frameworkUrl: "Build/WebGLBuild.framework.js",
+            codeUrl: "Build/WebGLBuild.wasm",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "DefaultCompany",
+            productName: "Teenpati",
+            productVersion: "1.0.2",
+            showBanner: unityShowBanner
+        }).then((unityInstance) => {
+            loadingBar.style.display = "none";
+            fullscreenButton.onclick = () => { unityInstance.SetFullscreen(1); };
+        }).catch((message) => {
+            alert("Unity WebGL error: " + message);
+        });
     </script>
 </body>
 </html>
